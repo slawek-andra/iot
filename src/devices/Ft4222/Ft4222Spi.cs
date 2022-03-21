@@ -41,14 +41,24 @@ namespace Iot.Device.Ft4222
             }
 
             // Select the one from bus Id
-            // FT4222 propose depending on the mode multiple interfaces. Only the A is available for SPI or where there is none as it's the only interface
-            var devInfo = devInfos.Where(m => m.Description == "FT4222 A" || m.Description == "FT4222").ToArray();
-            if ((devInfo.Length == 0) || (devInfo.Length < _settings.BusId))
+            if (devInfos.Count < _settings.BusId)
             {
                 throw new IOException($"Can't find a device to open SPI on index {_settings.BusId}");
             }
 
-            DeviceInformation = new(devInfo[_settings.BusId]);
+            // FT4222 propose depending on the mode multiple interfaces. In mode 0 Only the A is available for SPI
+            // In mode 1 A, B and C are available
+            // In mode 2 A, B, C and D are available
+            // In mode 3 the only interface is available
+            var devInfo = devInfos[_settings.BusId];
+            if ((devInfo.Description == "FT4222 B" && devInfo.Type == FtDeviceType.Ft4222HMode0or2With2Interfaces) ||
+                (devInfo.Description == "FT4222 D" && devInfo.Type == FtDeviceType.Ft4222HMode1or2With4Interfaces))
+            {
+                throw new IOException($"No SPI capable device on index {_settings.BusId}");
+            }
+
+            DeviceInformation = new(devInfo);
+
             // Open device
             var ftStatus = FtFunction.FT_OpenEx(DeviceInformation.LocId, FtOpenType.OpenByLocation, out _ftHandle);
 

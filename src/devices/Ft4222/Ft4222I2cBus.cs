@@ -16,7 +16,7 @@ namespace Iot.Device.Ft4222
     /// </summary>
     internal class Ft4222I2cBus : I2cBus
     {
-        private const uint I2cMasterFrequencyKbps = 400;
+        private const uint I2cMasterFrequencyKbps = 60;
 
         private SafeFtHandle _ftHandle;
         private HashSet<int> _usedAddresses = new HashSet<int>();
